@@ -1,0 +1,1 @@
+//Hiển thị danh sách ảnh đã chụp hoặc chọn từ thư viện.

@@ -1,0 +1,1 @@
+//Hiển thị giao diện chụp ảnh và xem trước ảnh.

@@ -1,0 +1,1 @@
+//Đại diện cho một file PDF, bao gồm đường dẫn, số trang, và các thông tin khác.
