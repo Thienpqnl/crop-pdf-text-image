@@ -1,8 +1,9 @@
-//Hiển thị giao diện chụp ảnh và xem trước ảnh.
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_crop_pdf/services/CameraService.dart'; // Import class CameraService
+import 'package:flutter_crop_pdf/models/ImageModel.dart';
+import 'package:flutter_crop_pdf/services/CameraService.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -15,6 +16,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraService _cameraService;
   bool _isCameraReady = false;
+  final List<ImageModel> _capturedImages = []; // Danh sách ảnh đã chụp
 
   @override
   void initState() {
@@ -43,22 +45,49 @@ class _CameraScreenState extends State<CameraScreen> {
     }
 
     return Scaffold(
-      body: FutureBuilder<void>(
-        future: _cameraService.initializeControllerFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_cameraService.cameraController);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+      appBar: AppBar(
+        title: const Text('Camera App'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder<void>(
+              future: _cameraService.initializeControllerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return CameraPreview(_cameraService.cameraController);
+                } else {
+                  return const Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
+          ),
+          if (_capturedImages.isNotEmpty)
+            Expanded(
+              child: ListView.builder(
+                itemCount: _capturedImages.length,
+                itemBuilder: (context, index) {
+                  final image = _capturedImages[index];
+                  return ListTile(
+                    leading:
+                        Image.file(File(image.path), width: 50, height: 50),
+                    title: Text('Ảnh ${index + 1}'),
+                    subtitle: Text('Chụp lúc: ${image.createdAt}'),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final imageFile = await _cameraService.takePicture();
-          if (imageFile != null) {
-            // Xử lý file ảnh đã chụp (ví dụ: hiển thị hoặc lưu trữ)
-            print('Ảnh đã chụp: ${imageFile.path}');
+          final imageModel = await _cameraService.takePicture();
+          if (imageModel != null) {
+            setState(() {
+              _capturedImages.add(imageModel); // Thêm ảnh vào danh sách
+            });
+
+            print('Ảnh đã chụp: ${imageModel.path}');
           }
         },
         child: const Icon(Icons.camera),

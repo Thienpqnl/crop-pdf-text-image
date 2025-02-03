@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_crop_pdf/models/ImageModel.dart';
 
 class CameraService {
   late CameraController _cameraController;
@@ -30,19 +31,16 @@ class CameraService {
     await _initializeControllerFuture;
   }
 
-  /// Chụp ảnh và trả về file ảnh đã chụp
-  Future<File?> takePicture() async {
+  /// Chụp ảnh và trả về đối tượng ImageModel
+  Future<ImageModel?> takePicture() async {
     try {
-      // Đảm bảo camera đã được khởi tạo
       await _initializeControllerFuture;
-
-      // Chụp ảnh và lưu vào file tạm
       final image = await _cameraController.takePicture();
 
-      // Trả về file ảnh đã chụp
-      return File(image.path);
+      // Tạo đối tượng ImageModel từ file ảnh
+      final imageFile = File(image.path);
+      return ImageModel.fromFile(imageFile);
     } catch (e) {
-      // Xử lý lỗi nếu có
       debugPrint('Lỗi khi chụp ảnh: $e');
       return null;
     }
