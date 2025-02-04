@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_crop_pdf/models/ImageModel.dart';
+import 'package:flutter_crop_pdf/screens/ImageEditScreen.dart';
 import 'package:flutter_crop_pdf/services/CameraService.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraService _cameraService;
   bool _isCameraReady = false;
-  final List<ImageModel> _capturedImages = []; // Danh sách ảnh đã chụp
+  final List<ImageModel> _capturedImages = [];
 
   @override
   void initState() {
@@ -73,6 +74,23 @@ class _CameraScreenState extends State<CameraScreen> {
                         Image.file(File(image.path), width: 50, height: 50),
                     title: Text('Ảnh ${index + 1}'),
                     subtitle: Text('Chụp lúc: ${image.createdAt}'),
+                    onTap: () {
+                      // Chuyển sang màn hình chỉnh sửa ảnh
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ImageEditScreen(imageModel: image),
+                        ),
+                      ).then((editedImage) {
+                        if (editedImage != null) {
+                          setState(() {
+                            _capturedImages[index] =
+                                editedImage; // Cập nhật ảnh đã chỉnh sửa
+                          });
+                        }
+                      });
+                    },
                   );
                 },
               ),
@@ -86,8 +104,6 @@ class _CameraScreenState extends State<CameraScreen> {
             setState(() {
               _capturedImages.add(imageModel); // Thêm ảnh vào danh sách
             });
-
-            print('Ảnh đã chụp: ${imageModel.path}');
           }
         },
         child: const Icon(Icons.camera),
