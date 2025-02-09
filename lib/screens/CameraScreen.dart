@@ -17,7 +17,7 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraService _cameraService;
   bool _isCameraReady = false;
-  final List<ImageModel> _capturedImages = [];
+  final List<ImageModel> _capturedImages = []; // Danh sách ảnh đã chụp
 
   @override
   void initState() {
@@ -28,6 +28,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _initializeCamera() async {
     await _cameraService.initializeCamera();
+    if (!mounted) return; // Kiểm tra nếu widget không còn được mounted
     setState(() {
       _isCameraReady = true;
     });
@@ -104,6 +105,8 @@ class _CameraScreenState extends State<CameraScreen> {
             setState(() {
               _capturedImages.add(imageModel); // Thêm ảnh vào danh sách
             });
+            print(
+                'Ảnh đã chụp: ${imageModel.path}'); // In đường dẫn ảnh để kiểm tra
           }
         },
         child: const Icon(Icons.camera),

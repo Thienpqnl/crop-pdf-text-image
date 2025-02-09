@@ -14,32 +14,41 @@ class CameraService {
 
   /// Khởi tạo camera
   Future<void> initializeCamera() async {
-    // Lấy danh sách các camera có sẵn trên thiết bị
-    final cameras = await availableCameras();
+    try {
+      // Lấy danh sách các camera có sẵn trên thiết bị
+      final cameras = await availableCameras();
 
-    // Chọn camera đầu tiên (thường là camera sau)
-    final firstCamera = cameras.first;
+      // Chọn camera đầu tiên (thường là camera sau)
+      final firstCamera = cameras.first;
 
-    // Khởi tạo CameraController
-    _cameraController = CameraController(
-      firstCamera, // Camera được chọn
-      ResolutionPreset.high, // Độ phân giải cao
-    );
+      // Khởi tạo CameraController
+      _cameraController = CameraController(
+        firstCamera, // Camera được chọn
+        ResolutionPreset.high, // Độ phân giải cao
+      );
 
-    // Khởi tạo controller và đợi cho đến khi hoàn thành
-    _initializeControllerFuture = _cameraController.initialize();
-    await _initializeControllerFuture;
+      // Khởi tạo controller và đợi cho đến khi hoàn thành
+      _initializeControllerFuture = _cameraController.initialize();
+      await _initializeControllerFuture;
+    } catch (e) {
+      debugPrint('Lỗi khi khởi tạo camera: $e');
+    }
   }
 
   /// Chụp ảnh và trả về đối tượng ImageModel
   Future<ImageModel?> takePicture() async {
     try {
-      await _initializeControllerFuture;
-      final image = await _cameraController.takePicture();
+      if (!_cameraController.value.isInitialized) {
+        debugPrint('Camera chưa được khởi tạo');
+        return null;
+      }
 
-      // Tạo đối tượng ImageModel từ file ảnh
-      final imageFile = File(image.path);
-      return ImageModel.fromFile(imageFile);
+      await Future.delayed(
+          const Duration(milliseconds: 500)); // Đợi camera ổn định
+
+      final image = await _cameraController.takePicture();
+      print("Ảnh đã chụp: ${image.path}");
+      return ImageModel.fromFile(File(image.path));
     } catch (e) {
       debugPrint('Lỗi khi chụp ảnh: $e');
       return null;
@@ -48,7 +57,9 @@ class CameraService {
 
   /// Giải phóng tài nguyên camera
   void dispose() {
-    _cameraController.dispose();
+    if (_cameraController.value.isInitialized) {
+      _cameraController.dispose();
+    }
   }
 
   /// Trả về CameraController để sử dụng trong UI (nếu cần)
